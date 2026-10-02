@@ -1,10 +1,9 @@
 const express = require('express')
+const routes = require('./routes/routes')
 const app = express()
 
-const productRoutes = require('./routes/routes')
-
 app.use(express.json())
-app.use('/products', productRoutes)
+app.use('/products', routes)
 
 
 app.listen(3000,()=>{

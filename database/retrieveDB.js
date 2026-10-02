@@ -8,9 +8,10 @@ async function readData() {
     return JSON.parse(data)
 }
 
-async function editData(data) {
+async function editData(data){
     data = JSON.stringify(data)
     await fs.writeFile(filePath, data, 'utf-8')
 }
+
 
 module.exports = {readData, editData}

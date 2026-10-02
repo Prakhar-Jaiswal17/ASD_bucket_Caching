@@ -1,16 +1,19 @@
 const express = require('express')
+const {checkCache} = require('../middleware/cache')
+const controllers = require('../controllers/controllers')
 const router = express.Router()
-const productController = require('../controllers/productController')
 
-router.get('/', productController.getAll)
-router.get('/:id', productController.getById)
+router.get('/', checkCache, controllers.getAll)
+router.get('/:id', checkCache, controllers.getById)
 
-router.post('/', productController.post)
 
-router.delete('/:id', productController.remove)
+router.post('/', controllers.postItem)
 
-router.put('/:id', productController.put)
+router.delete('/:id', controllers.deleteItem)
 
-router.patch('/:id', productController.patch)
+router.put('/:id', controllers.put)
+
+
+router.patch('/:id', controllers.patch)
 
 module.exports = router

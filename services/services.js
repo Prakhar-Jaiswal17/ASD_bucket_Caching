@@ -1,66 +1,74 @@
-const {readData, editData} = require('../database/retrieve')
+const {clearCache, addCache} = require('../middleware/cache')
+const {readData, editData} = require('../database/retrieveDB')
 
-function addDelay() {
-    return new Promise((res, rej) => {
-        setTimeout(res, 1000)
+function addDelay(){
+    return new Promise((res,_)=>{
+        setTimeout(res,1000)
     })
 }
 
-async function getAllProducts() {
+async function getAllProducts(key){
     await addDelay()
     const productData = await readData()
+    addCache(key,productData)
     return productData
 }
 
-async function getProductById(id) {
+async function getProduct(id, key) {
     await addDelay()
     const productData = await readData()
-    const item = productData.find(x => x.id === id)
+    const item = productData.find(x=>x.id===id)
+    if(item) 
+        addCache(key,item)
     return item
 }
 
-async function createProduct(body) {
+async function addProduct(data) {
     const productData = await readData()
-    const obj = { id: productData.length + 1, ...body }
+    const id = productData.length===0? 1:(productData[productData.length-1].id)+1
+    const obj = {id: id,...data}
     productData.push(obj)
     await editData(productData)
+    clearCache()
     return obj
 }
 
-async function deleteProduct(id) {
+async function removeItem(id) {
     const productData = await readData()
-    const idx = productData.findIndex(x => x.id === id)
-    if (idx === -1) {
-        return null
-    }
+    const idx = productData.findIndex(x=>x.id===id)
     const product = productData[idx]
-    productData.splice(idx, 1)
-    await editData(productData)
+    if(idx!==-1){
+        productData.splice(idx,1)
+        await editData(productData)
+        clearCache()
+    }
     return product
 }
 
-async function replaceProduct(id, body) {
+async function putItem(id,data) {
     const productData = await readData()
-    const idx = productData.findIndex(x => x.id === id)
-    if (idx === -1) {
-        return null
+    const idx = productData.findIndex(x=>x.id===id)
+    let updatedProduct;
+    if(idx!==-1){
+        updatedProduct = {id:id, ...data}
+        productData.splice(idx,1,updatedProduct)
+        await editData(productData)
+        clearCache()
     }
-    const updatedProduct = { id: id, ...body }
-    productData.splice(idx, 1, updatedProduct)
-    await editData(productData)
     return updatedProduct
 }
 
-async function updateProduct(id, body) {
+async function updateProduct(id,data) {
     const productData = await readData()
-    const idx = productData.findIndex(x => x.id === id)
-    if (idx === -1) {
-        return null
+    const idx = productData.findIndex(x=>x.id===id)
+    let updatedProduct;
+    if(idx!==-1){
+        updatedProduct = {...productData[idx], ...data}
+        productData.splice(idx,1,updatedProduct)
+        await editData(productData)
+        clearCache()
     }
-    const updatedProduct = { ...productData[idx], ...body }
-    productData.splice(idx, 1, updatedProduct)
-    await editData(productData)
     return updatedProduct
 }
 
-module.exports = {getAllProducts, getProductById, createProduct, deleteProduct, replaceProduct, updateProduct}
+module.exports = {getAllProducts, getProduct, addProduct, removeItem, putItem, updateProduct}
